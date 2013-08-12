@@ -1,3 +1,9 @@
 :cd <directory name>
 :load <filename>.hs
+--comments
+{ another form of comments }
+grouping uses parentheses
+Eg: area (5+3) -- area 8
+area 5 + 3 -- (area 5) + 3 
+function takes precedence over the operator
 
