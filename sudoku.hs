@@ -37,35 +37,27 @@ fixed (_:xs) = fixed xs
 -- Power of lazyness??
 --prunelist :: 
 --prunelist (x:xs) c = |xx  |xx<-x, cx<-c
+--this acts on a row only
 pruneList l = map f l
+    where l1 = fixed l
+    f l2 = filter (\x -> not(x'elem' l1) l2
 
+--prune takes a matrix of choices and prunes all
+-- elem works only if Equality is defined. so not for any arbit type a
+prune :: (Eq a) => Matrix [a] -> Matrix [a]
 
+-- Convert to rows, map pruneList to each elem of rows and then convert back to original notation 
+pruneBy f = f . (map pruneList) . f
 
+prune = pruneBy boxes . pruneBy cols . pruneBy rows
+solver2 = filter (correct) . take 50000 mcp . prune. intialChoices --takes only first 50000
 
+-- Mimimum element which is not singleton
+minChoice = minimum . (filter (\= 1)) . concat (map (map length))
 
+expand :: Matrix Choices -> [Matrix Choices]
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+data Btree a = Leaf a | Fork (Btree a) (Btree a)
+--two typess ss   
 
 
