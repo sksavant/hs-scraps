@@ -1,3 +1,4 @@
+module PFunc where
 import Data.Char -- for isDigit
 --import Data.Tree
 
@@ -137,7 +138,11 @@ commaList p = listOf p (symbol ',')
 chainl p s = p <*> many (s <*> p) <@ f
     where f = uncurry (foldl (flip ap2))
 
+chainr p s = many (p <*> s) <*> p
+            <@ uncurry (flip (foldr ap1))
+
 ap2 (op,y) = (`op` y)
+ap1 (x,op) = (x `op`)
 
 -- Using the <?@ operator
 p <?@ (no,yes) = p <@ f
@@ -173,7 +178,7 @@ greedy1 = first.many1
 -- accepts the construction if present but does not fail if not present
 compulsion = first.option
 
-main = do
+main1 = do
     let
         x = symbola "asfavb"
     let
