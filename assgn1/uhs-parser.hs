@@ -1,3 +1,4 @@
+-- <Not Complete>
 -- Author : S Krishna Savant <savant.2020@gmail.com>
 -- Parser for u-haskell : Major Assignment 1
 import Data.List
@@ -26,7 +27,7 @@ parse x = Prog (fst y) (snd y)
 
 parseList :: [String] -> ([Fundef],Exp)
 parseList [] = ([],Nil)
-parseList (x:xs)    | isExp(x) = (fst ys,f (expr x))
+parseList (x:xs)    | isExp(x) = (fst ys,f (just expr x))
                     | isFundef(x) = (y:(fst ys),snd ys)
     where   ys = parseList xs
             y = g (findfundef x)
@@ -60,11 +61,13 @@ findfundef :: Parser Char Fundef
 findfundef = succeed (Fun "check" [] Nil)
 
 bool :: Parser Char Bool
-bool = option(token("True")) <@ (\_ -> True)
-        <|> option(token("False")) <@ (\_ -> False)
+bool = option(token("True")) <@ (\x -> True)
+        <|> succeed False
 
 f :: [([Char],Exp)] -> Exp
-f p = snd ( p !! 0)
+f p = snd (p!! 0)
+--f p | length(p)>0   = snd ( p !! 0)
+--    | otherwise     = Nil
 
 g :: [([Char],Fundef)] -> Fundef
 g p = snd ( p !! 0)
@@ -74,9 +77,10 @@ lsfun :: String -> [Fundef]
 lsfun x = [Fun "check" [] Nil]
 
 main = do 
-    --input <- readFile "pfile"
+    input <- readFile "pfile"
     let
-        input = "4+5"
+--        input = "fib"
+--        input = "(5+3)-(6-4)"
     let
         program = parse input
     print program
