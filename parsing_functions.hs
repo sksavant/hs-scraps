@@ -94,8 +94,46 @@ infixr 4 <|>
 nesting :: Parser Char Int
 nesting = (open *> nesting <* close) <*> nesting <@ f
           <|> succeed 0
-    where f (x,y) = (1+x) 
-    ''a`
+    where f (x,y) = (1+x) `max` y
+
+-- Generalizing parens and nesting
+foldparens :: ((a,a)->a) -> a -> Parser Char a
+foldparens f e = p
+    where p = (open *> p <* close) <*> p <@ f
+              <|> succeed e
+
+-- parens = foldparens Bin Nil
+-- nesting = foldparens f 0
+--      where f (x,y) = (1+x) `max` y
+
+-- More parser combinations
+-- many will find 0 or more occurences of the construction of parser
+many :: Parser s a -> Parser s [a]
+many p = p <*> many p <@ list
+        <|> succeed []
+        where list (x,xs) = x:xs
+
+-- natural number parser from many
+natural :: Parser Char Int
+natural = many digit <@ foldl f 0
+    where f a b = 10*a + b
+
+-- option generates list with 0 or 1 element
+option p =   p    <@ (\x->[x])
+         <|> succeed []
+
+-- many many1 option can be designed into pack: opening token, body, closing token
+pack :: Parser s a -> Parser s b -> Parser s c -> Parser s b
+pack s1 p s2 = s1 *> p <* s2
+parenthesized p = pack (symbol '(') p (symbol ')')
+compund p = pack (token "begin") p (token "end")
+
+-- listOf generates parser for a list
+listOf :: Parser s a -> Parser s b -> Parser s [a]
+listOf p s = p <:*> many (s *> p) <|> succeed []
+
+p1 <:*> p2 = p1 <*> p2 <@ (\(x,xs) -> x:xs)
+            <|> succeed []
 
 main = do
     let
@@ -110,8 +148,16 @@ main = do
     let
         x1 = parens "s(abc)"
     let
+        x2 = just nesting "()(())()"
+    let
+        x3 = many symbola "aasaafavb"
+    let
+        x4 = just natural "34"
+    let
+        x5 = listOf symbola (symbol ',') "a,a,aa,ab,sa,s"
+    let
         asserted = ((x==x0) && (x==z) && (x==y) && (x==[("sfavb",'a')]))
-    print x1
+    print x5
 
 
 
