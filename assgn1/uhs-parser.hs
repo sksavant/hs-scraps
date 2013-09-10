@@ -40,9 +40,9 @@ isExp x = True
 
 -- findexpr x will see if there is any expression and returns the main expr
 fact :: Parser Char Exp
-fact    =   (first integer) <@ I
-        <|> bool <@ B
-        <|> ( identifier)
+fact    =  sp integer <@ I
+        <|> sp bool <@ B
+        <|> (sp identifier)
             <*> (spaceList expr) <@ ffn
         <|> parenthesized expr
         <|> (bracketed (commaList expr)) <@ g
@@ -54,6 +54,7 @@ fact    =   (first integer) <@ I
                         g' [] = Nil
 
 expr :: Parser Char Exp
+--expr = sp expr'
 expr = chainr fact
         (   symbol '+' <@ f1
         <|> symbol '-' <@ f2
@@ -89,13 +90,13 @@ lsfun x = [Fun "check" [] Nil]
 main = do 
 --    input <- readFile "pfile"
     let
-        --input = "3+4+(fib 4)"
+        input = "3+4+(fib 4)"
         --input = "False+[4,5,6]"
-        input = "fib 5 8"
+        --input = "fib 5 8"
         --input = "4 + (5 - 6) + (fib 8)"
     let
-        --program = parse input
-        program = integer' " "
+        program = parse input
+        --program = (sp integer) " "
         --program =  (just ( identifier <*> spaceList expr) )input
         --program = bracketed (commaList expr) input
     print program
@@ -145,6 +146,20 @@ fail xs = []
 -- Parser transformers
 -- sp will drop spaces from the input and then applies given parser
 sp p = p . dropWhile(==' ')
+--sp  ::  Parser Char a -> Parser Char a
+--sp   =  (greedy (satisfy isSpace) *> )
+
+--sp'  =  ( . (dropWhile isSpace))
+
+
+sptoken  ::  String -> Parser Char String
+sptoken   =  sp . token
+
+spsymbol ::  Char -> Parser Char Char
+spsymbol  =  sp . symbol
+
+spident  ::  Parser Char String
+spident   =  sp identifier
 
 -- just will do same as p but ensures that the rest of string is null
 just p = filter (null.fst) . p
