@@ -54,6 +54,7 @@ just p = filter (null.fst) . p
                 | (ys,v) <- p xs]
 
 -- digit transform output to integer
+digit :: Parser Char Int
 digit = satisfy isDigit <@ f
     where f c = ord c - ord '0' -- ord c gives the ascii value of character c
 
@@ -150,15 +151,17 @@ p <?@ (no,yes) = p <@ f
             f [x] = yes x
 
 -- fract : fractional number
---fract = many digit <@ foldr f 0.0
---    where f d x = (x + fromInteger d)/10.0
+fract :: Parser Char Float
+fract = many digit <@ foldr f 0.0
+    where f d x = (x + fromIntegral d)/10.0
 
 --optional fractional part
---fixed = (integer <@ fromInteger)
---        <*>
---        (option (symbol '.' *> fract) <?@ (0.0, id))
---        <@ uncurry (+)
+fixed = (integer <@ fromIntegral)
+        <*>
+        (option (symbol '.' *> fract) <?@ (0.0, id))
+        <@ uncurry (+)
 
+integer :: Parser Char Int
 integer = option (symbol '-') <*> natural <@ f
     where   f ([],n) = n
             f (_,n) = -n
