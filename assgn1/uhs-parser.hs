@@ -26,7 +26,7 @@ parse x = Prog (fst y) (snd y)
 
 parseList :: [String] -> ([Fundef],Exp)
 parseList [] = ([],Nil)
-parseList (x:xs)    | isExp(x) = (fst ys,f (findexpr x))
+parseList (x:xs)    | isExp(x) = (fst ys,f (expr x))
                     | isFundef(x) = (y:(fst ys),snd ys)
     where   ys = parseList xs
             y = g (findfundef x)
@@ -38,13 +38,20 @@ isExp :: String -> Bool
 isExp x = True
 
 -- findexpr x will see if there is any expression and returns the main expr
-findexpr :: Parser Char Exp
-findexpr    =   integer <@ I
-            <|> bool <@ B
-            <|> identifier<@ FName
---            <|> parenthesized expr
-            <|> succeed Nil
---      where ap (x,f) = f x
+fact :: Parser Char Exp
+fact    =   integer <@ I
+        <|> bool <@ B
+        <|> identifier<@ FName
+        <|> parenthesized expr
+
+expr :: Parser Char Exp
+expr = chainr fact
+        (   symbol '+' <@ f1
+        <|> symbol '-' <@ f2
+        )
+    where   f c e1 e2 = App (App (FName c) e1) e2
+            f1 c e1 e2 = f "+" e1 e2
+            f2 c e1 e2 = f "-" e1 e2
 
 isFundef :: String -> Bool
 isFundef x = False
@@ -69,7 +76,7 @@ lsfun x = [Fun "check" [] Nil]
 main = do 
     --input <- readFile "pfile"
     let
-        input = "45\n43\n"
+        input = "4+5"
     let
         program = parse input
     print program

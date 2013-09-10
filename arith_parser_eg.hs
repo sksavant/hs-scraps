@@ -30,7 +30,9 @@ expr = chainr term
             )
 
 main = do
-    input <- readFile "afile"
+    --input <- readFile "afile"
     let
-        program = expr input
+        input = "2+(3-4)/4"
+    let
+        program = just expr input
     print program
