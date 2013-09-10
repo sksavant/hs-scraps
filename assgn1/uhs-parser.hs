@@ -40,20 +40,18 @@ isExp x = True
 
 -- findexpr x will see if there is any expression and returns the main expr
 fact :: Parser Char Exp
-fact    =   integer <@ I
+fact    =   (first integer) <@ I
         <|> bool <@ B
-        <|> identifier
-            <@ FName
+        <|> ( identifier)
+            <*> (spaceList expr) <@ ffn
         <|> parenthesized expr
-        <|> (bracketed (commaList expr))
-                <@ g
+        <|> (bracketed (commaList expr)) <@ g
 --  where   fcl x,el) = App x (g el)
     where   g [] = Nil
             g (x:xs) = App (App (FName "cons") x) (g xs)
-    --where   ap (x,f)=  f x
-    --        g x el= App (FName x) (fact el)
-    --            where   g' (x:xs) = App x (g' xs)
-    --                    g' [] = Nil
+            ffn (x,el) = App (FName x) (g' el )
+                where   g' (x:xs) = App x (g' xs)
+                        g' [] = Nil
 
 expr :: Parser Char Exp
 expr = chainr fact
@@ -91,10 +89,14 @@ lsfun x = [Fun "check" [] Nil]
 main = do 
 --    input <- readFile "pfile"
     let
---        input = "3+4+(fib 4)"
-        input = "False+[4,5,6]"
+        --input = "3+4+(fib 4)"
+        --input = "False+[4,5,6]"
+        input = "fib 5 8"
+        --input = "4 + (5 - 6) + (fib 8)"
     let
-        program = parse input
+        --program = parse input
+        program = integer' " "
+        --program =  (just ( identifier <*> spaceList expr) )input
         --program = bracketed (commaList expr) input
     print program
 
@@ -264,7 +266,11 @@ fixed = (integer <@ fromIntegral)
 integer :: Parser Char Int
 integer = option (symbol '-') <*> natural <@ f
     where   f ([],n) = n
-            f (_,n) = -n
+            f ([_],n) = -n
+
+integer'    ::  Parser Char Int
+integer'     =  (option (symbol '-') <?@ (id,const negate)) <*> natural  <@ ap
+    where ap (f,x) = f x
 
 -- identifier 
 identifier = many1 (satisfy isAlpha)
