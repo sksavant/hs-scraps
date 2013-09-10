@@ -20,7 +20,22 @@ data Exp        = I Int
 -- First break with '\n' into a list of strings with lines
 -- On second thought let's think. 
 -- We need to return a Prog with a list of Fundefs and a Exp
-parse x = Prog (lsfun x) (f (map findexpr (lines x)))
+parse :: String -> Program
+parse x = Prog (fst y) (snd y)
+    where y =parseList (lines x)
+
+parseList :: [String] -> ([Fundef],Exp)
+parseList [] = ([],Nil)
+parseList (x:xs)    | isExp(x) = (fst ys,f (findexpr x))
+                    | isFundef(x) = (y:(fst ys),snd ys)
+    where   ys = parseList xs
+            y = g (findfundef x)
+
+--Prog (lsfun x) (f (map findexpr (lines x)))
+
+-- isExp
+isExp :: String -> Bool
+isExp x = True
 
 -- findexpr x will see if there is any expression and returns the main expr
 findexpr :: Parser Char Exp
@@ -31,12 +46,21 @@ findexpr    =   integer <@ I
             <|> succeed Nil
 --      where ap (x,f) = f x
 
+isFundef :: String -> Bool
+isFundef x = False
+
+findfundef :: Parser Char Fundef
+findfundef = succeed (Fun "check" [] Nil)
+
 bool :: Parser Char Bool
 bool = option(token("True")) <@ (\_ -> True)
         <|> option(token("False")) <@ (\_ -> False)
 
-f :: [[([Char],Exp)]] -> Exp
-f p = snd (( p !! 0) !! 0)
+f :: [([Char],Exp)] -> Exp
+f p = snd ( p !! 0)
+
+g :: [([Char],Fundef)] -> Fundef
+g p = snd ( p !! 0)
 
 -- lsfun x will generate the list of all Fundef s in the program
 lsfun :: String -> [Fundef]
@@ -45,7 +69,7 @@ lsfun x = [Fun "check" [] Nil]
 main = do 
     --input <- readFile "pfile"
     let
-        input = "x [6]7\n45\n"
+        input = "45\n43\n"
     let
         program = parse input
     print program
