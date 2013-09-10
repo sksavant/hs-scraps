@@ -42,8 +42,15 @@ isExp x = True
 fact :: Parser Char Exp
 fact    =   integer <@ I
         <|> bool <@ B
-        <|> identifier<@ FName
+        <|> identifier
+            <*> (option (parenthesized (spaceList expr))
+                <?@ (FName,flip g))
+            <@ ap
         <|> parenthesized expr
+    where   ap (x,f)=  f x
+            g x el= App (FName x) (g' el)
+                where   g' (x:xs) = App x (g' xs)
+                        g' [] = Nil
 
 expr :: Parser Char Exp
 expr = chainr fact
@@ -62,7 +69,7 @@ findfundef = succeed (Fun "check" [] Nil)
 
 bool :: Parser Char Bool
 bool = option(token("True")) <@ (\x -> True)
-        <|> succeed False
+        <|> option(token("False")) <@ (\x -> False)
 
 f :: [([Char],Exp)] -> Exp
 f p = snd (p!! 0)
@@ -77,10 +84,10 @@ lsfun :: String -> [Fundef]
 lsfun x = [Fun "check" [] Nil]
 
 main = do 
-    input <- readFile "pfile"
+--    input <- readFile "pfile"
     let
---        input = "fib"
---        input = "(5+3)-(6-4)"
+--        input = "3+4+(fib 4)"
+        input = "(5+3)-(6-4)"
     let
         program = parse input
     print program
@@ -219,6 +226,7 @@ compound p = pack (token "begin") p (token "end")
 listOf p s = p <:*> many (s *> p) <|> succeed []
 
 commaList p = listOf p (symbol ',')
+spaceList p = listOf p (symbol ' ')
 
 -- Saving the seperator as well
 chainl p s = p <*> many (s <*> p) <@ f
