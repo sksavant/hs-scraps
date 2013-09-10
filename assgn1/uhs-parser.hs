@@ -43,23 +43,28 @@ fact :: Parser Char Exp
 fact    =   integer <@ I
         <|> bool <@ B
         <|> identifier
-            <*> (option (parenthesized (spaceList expr))
-                <?@ (FName,flip g))
-            <@ ap
+            <@ FName
         <|> parenthesized expr
-    where   ap (x,f)=  f x
-            g x el= App (FName x) (g' el)
-                where   g' (x:xs) = App x (g' xs)
-                        g' [] = Nil
+        <|> (bracketed (commaList expr))
+                <@ g
+--  where   fcl x,el) = App x (g el)
+    where   g [] = Nil
+            g (x:xs) = App (App (FName "cons") x) (g xs)
+    --where   ap (x,f)=  f x
+    --        g x el= App (FName x) (fact el)
+    --            where   g' (x:xs) = App x (g' xs)
+    --                    g' [] = Nil
 
 expr :: Parser Char Exp
 expr = chainr fact
         (   symbol '+' <@ f1
         <|> symbol '-' <@ f2
+        <|> symbol ':' <@ f3
         )
     where   f c e1 e2 = App (App (FName c) e1) e2
             f1 c e1 e2 = f "+" e1 e2
             f2 c e1 e2 = f "-" e1 e2
+            f3 c e1 e2 = f "cons" e1 e2
 
 isFundef :: String -> Bool
 isFundef x = False
@@ -68,8 +73,8 @@ findfundef :: Parser Char Fundef
 findfundef = succeed (Fun "check" [] Nil)
 
 bool :: Parser Char Bool
-bool = option(token("True")) <@ (\x -> True)
-        <|> option(token("False")) <@ (\x -> False)
+bool =  token("True") <@ (\x -> True)
+        <|> token("False") <@ (\x -> False)
 
 f :: [([Char],Exp)] -> Exp
 f p = snd (p!! 0)
@@ -87,9 +92,10 @@ main = do
 --    input <- readFile "pfile"
     let
 --        input = "3+4+(fib 4)"
-        input = "(5+3)-(6-4)"
+        input = "False+[4,5,6]"
     let
         program = parse input
+        --program = bracketed (commaList expr) input
     print program
 
 -- Copied from PFunc
@@ -220,6 +226,7 @@ option p = p <@ (\x->[x])
 pack s1 p s2 = s1 *> p <* s2
 
 parenthesized p = pack (symbol '(') p (symbol ')')
+bracketed p = pack (symbol '[') p (symbol ']')
 compound p = pack (token "begin") p (token "end")
 
 -- listOf generates parser for list given parser for items and parser for seperator
