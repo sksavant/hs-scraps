@@ -8,7 +8,7 @@
     --a5 = [xs] ++ [] == [xs] -- True
     --a6 = [xs] ++ [xs] == [xs,xs] -- True
 
--- prob2
+-- prob2 @TODO
 errno :: String -> Int
 errno (x:xs) = 0
 
@@ -37,12 +37,45 @@ reverseff l = rev l []
     where   rev [] a = a
             rev (x:xs) a = rev xs (x:a)
 
--- prob 5
+-- prob 5 @TODO
 hof a b c [] = b
 hof a b c (x:xs) = c ( a x ) (hof a b c xs)
 
 -- prob 6
 -- Longest common subsequence
 lcs :: (Eq a) => [a] -> [a] -> [a]
-lcs a b = a
 ans1 = lcs ['A','B','C','B','D','A'] ['B','D','C','A','B','A']
+lcs [] b = []
+lcs a b = longestlist (commonseq a b)
+commonseq a b = [xs | xs <- (subseqs a), ys<- (subseqs b), xs==ys]
+
+longestlist [[]] = []
+longestlist a = f a 0 []
+    where   f [] n a = a
+            f (x:xs) n a    | (length x) > n = f xs (length x) x 
+                            | otherwise = f xs n a
+
+subseqs [] = [[]]
+subseqs (x:xs) = [x:e | e <- (firstseq xs)] ++ subseqs(xs)
+
+firstseq :: [a] -> [[a]]
+firstseq [] = [[]]
+firstseq (x:xs) = []:[x:e | e <- (firstseq xs)]
+
+-- prob 7 @TODO
+type Graph = [(Int,Int)]
+type Node = Int
+type Path = [Int]
+
+-- makepath returns all simple paths from a node in graph
+-- makepath :: Node -> Graph -> [Path]
+-- makepath n g = concat [nocyclepath n x | x <- [(makepath nn g) | nn <- (neighbors n)]]
+
+-- prob 8
+-- cprod : cartesian product of list of lists
+cprod :: [[a]] -> [[a]]
+cprod (x:[]) = [[xn] | xn <- x]
+cprod (x:xs) = [xn:yn | xn <- x, yn <- (cprod xs)]
+
+-- prob 9
+--
