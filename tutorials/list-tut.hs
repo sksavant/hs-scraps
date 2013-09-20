@@ -106,11 +106,32 @@ singleton (x:xs) = False
 
 fact1 (a,b) = not (singleton (good_factors (a*b)))
 fact2 (a,b) = not (singleton (good_summands (a+b)))
-fact3 (a,b) = all fact1 [x|x <- (good_summands (a+b))])
+fact3 (a,b) = all fact1 [x|x <- (good_summands (a+b))]
 fact4 (a,b) = singleton (filter (==True) [fact3 x|x <- (good_factors (a*b))])
 fact5 (a,b) = singleton (filter (==True) [fact4 x|x <- (good_summands (a+b))])
 result = [(a,b) | a<-good_nums, b<-good_nums, (fact1 (a,b)) == True, (fact2 (a,b)) == True, (fact3 (a,b)) == True, (fact4 (a,b)) == True, (fact5 (a,b)) == True]
--- Not Working. WHY? @TODO
+-- Not Working. WHY? @DO fact3 was wrong before. Done
 
 -- prob 12 @TODO
 --
+
+-- prob 13 
+fewestmoves :: [Int] -> Int
+fewestmoves x = fm 0 x
+
+-- fm is the fewest moves from sth square in the grid [Int]
+fm :: Int -> [Int] -> Int
+fm s x  | s<(length x) = if (x!!s)==0 then 1+ (min (fm (s+1) x) (fm (s+4) x)) --Black
+                        else 1+(min (fm (s+1) x) (fm (s+2) x)) --White
+        | otherwise = 0
+
+-- prob 14 
+-- summands which will take an integer n and produces list containing all ways of writing n as sum of positive integers
+summands :: Int -> [[Int]]
+summands 1 = [[1]]
+--summands n = (tail ( [[1]++x | x <- (summands (n-1))] ++ [x++[1] | x<- (summands (n-1))] ) )++[[n]] -- Incorrect!
+
+-- prob 15
+dig = [1..9]
+--out = head [[('s',s),('e',e),('n',n),('d',d),('m',m),('o',o),('r',r),('y',y)] |  s <- dig, e <- dig, n <- dig, d <- dig, m <- dig, o <- dig, r <- dig, y <- dig, (d+e) `mod` 10 == e ,(n+r+((d+e)`div`10))`mod`10==e, (e+o+((n+r)`div`10))`mod`10==n, (s+m+((e+o)`div`10))`mod`10==o, (s+m)`div`10==m] -- Pretty basic buggy code
+
