@@ -70,3 +70,23 @@ pack' = foldr func []
 encode :: Eq a => [a] -> [(Int,a)]
 encode x = [(length a,head a)| a <- (pack x)]
 
+
+-- 11
+-- Modified run-length encoding
+data EncType a = Multiple Int a | Single a
+    deriving Show
+encodeModified ::(Eq a) => [a] -> [EncType a]
+encodeModified x = [f a | a <- (pack x)]
+    where f a   | (length a)==1 = Single (head a)
+                | otherwise = Multiple (length a) (head a)
+
+-- 12
+-- Decoding the run-length encoding
+decodeModified :: (Eq a) => [EncType a] -> [a]
+decodeModified [] = []
+decodeModified (x:xs) = (f x) ++ decodeModified(xs)
+    where   f (Single c) = [c]
+            f (Multiple n c) = replicate n c
+
+-- 13
+--
