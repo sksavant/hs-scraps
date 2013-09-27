@@ -45,13 +45,22 @@ max_scount (x:xs) = (findcount x xs):max_scount(xs)
 -- Q 6
 -- 
 data Gtree = Gnode Int [Gtree]
+    deriving Show
 
 sumtree :: Gtree -> Int
-sumtree t = sum [(sum x)|x <- (traverse t)]
+sumtree t = sum [(toDigit x)|x <- (traverse t)]
+    
+toDigit :: [Int]->Int
+toDigit na = h na (length na)
+    where h x n = sum [((x !! i)*(pow 10 (n-i-1)))| i <- [0..(n-1)]] 
+
+pow m n = h m n 1
+    where   h m 0 k = k
+            h m n k = h m (n-1) (k*m)
 
 traverse :: Gtree -> [[Int]]
 traverse (Gnode x []) = [[x]]
-traverse (Gnode x tree) = [concat [x:i1 |i1 <-(traverse t)] | t <- tree]
+traverse (Gnode x tree) = [concat [x:i1 |i1 <-(traverse t)] )| t <- tree]
 
 
 
