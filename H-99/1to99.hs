@@ -89,4 +89,33 @@ decodeModified (x:xs) = (f x) ++ decodeModified(xs)
             f (Multiple n c) = replicate n c
 
 -- 13
---
+-- Run length encoding directly
+encodeDirect :: (Eq a) => [a] -> [EncType a]
+encodeDirect [] = []
+encodeDirect x = encodeHelper x [] 0
+encodeHelper :: (Eq a) => [a] -> [EncType a] -> Int -> [EncType a]
+encodeHelper [x] c n    | n==0 = c++[Single x]
+                        | otherwise = c++[Multiple (n+1) x]
+encodeHelper (x:(y:ys)) c n   | x==y = encodeHelper (y:ys) c (n+1)
+                              | otherwise = encodeHelper (y:ys) (c++(f n x)) 0
+    where f n x | n==0 = [Single x]
+                | otherwise = [Multiple (n+1) x]
+
+-- 14
+-- Duplicate elements of a list
+dupli :: [a] -> [a]
+dupli x = repli x 2
+
+-- 15 
+-- Replicate elements of a list n times
+repli :: [a] -> Int -> [a]
+repli x n = concat (g n x)
+    where g n = map (\x -> concat (take n (repeat [x])))
+
+-- 16
+-- Drop every Nth element in a list
+dropEvery :: Int -> [a] -> [a]
+dropEvery n = reverse . dropHelper n [] 0
+dropHelper n c r [] = c
+dropHelper n c r (x:xs) | r`mod`n==n-1 = dropHelper n c (r+1) xs
+                        | otherwise = dropHelper n (x:c) (r+1) xs
