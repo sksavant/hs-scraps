@@ -7,6 +7,8 @@ dropAll f x = g f x []
             g f (x:xs) c = g f xs (h f x c)
             h f x c = if (f x) then c else x:c
 
+f' = sum . filter (not . isEven) -- Efficient implementation
+
 
 isEven :: Int -> Bool
 isEven n    | (n`mod`2)==1 = False
