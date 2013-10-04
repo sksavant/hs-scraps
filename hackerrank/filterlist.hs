@@ -1,5 +1,5 @@
 -- Filter the list to leave only numbers more than n
-f n = dropWhile (\x -> (x>=n)) --Fill up this function
+f n = filter (\x -> (x<n)) --Fill up this function
 
 -- The Input/Output section. You do not need to change or modify this part
 main = do
